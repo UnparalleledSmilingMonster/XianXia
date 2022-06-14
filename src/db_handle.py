@@ -39,7 +39,14 @@ class Database(object):
             
         self.cur.execute(query_create_novel)
         self.commit()
+    
+    def number_chapters(self, novel):
+        query_nb_chapters = """ SELECT COUNT( DISTINCT chapter) FROM """ + self.scrub(novel) + """ ; """
+        self.cur.execute(query_nb_chapters)
+        return self.cur.fetchone()
+    
 
+    
     def search_word(self, novel, word):
         query_search_word = """SELECT hanzi, pinyin, meaning FROM """ + self.scrub(novel) + """ 
             WHERE hanzi == ? ; """

@@ -103,53 +103,10 @@ class new_novel_window(tk.Toplevel):
         self.parent.buffer_string = novel
         self.database.commit()
         self.destroy()
-
-
-
-
-############################################################################
-
-
-class load_window(tk.Toplevel):
-    def __init__(self, parent, db):
-        tk.Toplevel.__init__(self, parent)
-        self.database = db
-        self.parent = parent
-        self.set_window()
         
-
-    def set_window(self):
-        self.title("XianXia")
-        self.geometry("700x300")
-        self.resizable(0,0)
-
-    def novel_list(self):
-        L = self.database.novel_list()
-        self.variable = tk.StringVar()
-        self.variable.set("Novel List") 
-        droplist_novels = tk.OptionMenu(self, self.variable, *L)
-        droplist_novels.pack(side=tk.TOP,anchor="c")
-        
-        ok = tk.Button(self, text = "Select novel", command = self.next)
-        ok.pack(side=tk.RIGHT, anchor="c")
-               
-        previous = tk.Button(self, text = "Cancel", command = self.cancel)
-        previous.pack(side=tk.LEFT, anchor="c")
-        
-
-    def next(self): 
-        self.parent.buffer_string = self.variable.get()
-        self.database.commit()
-        self.destroy()
-        
-    def cancel(self):
-        self.parent.cancel = True
-        self.destroy()
+   
 
 
-
-
-########################################################################
 
 
 class novel_window(tk.Toplevel):
@@ -165,48 +122,56 @@ class novel_window(tk.Toplevel):
         self.resizable(0,0)
         self.title(self.novel)
 
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=3)
+
 
 
     def define_widgets(self):
         
         label_novel = tk.Label(self, text = self.novel)
-        label_novel.pack(side = tk.TOP, anchor="c")
+        label_novel.grid(row=0,column=1)
         
        
         button_vocab = tk.Button(self, text = "Show all vocabulary", command = self.vocab)
-        button_vocab.pack(side = tk.TOP, anchor="c")
+        button_vocab.grid(row=1,column=1)
          
     
         button_chap = tk.Button(self, text="New Chapter", command = self.new_chapter)
-        button_chap.pack(side=tk.TOP,pady=10)
-        label_word = tk.Label(self, text = "New word")
-        label_word.pack(side=tk.TOP,pady=30)
+        button_chap.grid(row=2,column=1)
+        button_new_word = tk.Button(self, text = "New word", command = self.new_word)
+        button_new_word.grid(row=3,column=1)
         
         button_search = tk.Button(self, text = "Search word", command = self.search_word)
-        button_search.pack(side=tk.TOP,pady=30)
+        button_search.grid(row=4,column=1)
         
         self.word_ukw = tk.StringVar(self)
         word_search = tk.Entry(self, textvariable = self.word_ukw)
-        word_search.pack(side = tk.TOP, anchor = "e")
+        word_search.grid(row=4, column = 2)
 
 
         button_quit = tk.Button(self, text="Leave", command=self.destroy)
-        button_quit.pack(side=tk.BOTTOM,anchor="e", padx=8, pady=8)
+        button_quit.grid(row=5, column = 2)
         
-        self.text_field = tk.Text(self, state='disabled', height = len(rows))
-        self.text_field.pack(side = tk.BOTTOM, anchor = "c")
-        
+        self.text_field = tk.Text(self, state='disabled', height = 3)
+        self.text_field.grid(row=5, column = 1)
+    
+    
+    def number_chapters(self):
+        return self.database.number_chapters(self.novel)[0]
+
+
+
        
     def vocab(self):
         self.clean_txt()
         rows = self.database.get_vocab(self.novel)    
         for (hanzi, pinyin, meaning) in rows :
-            self.text_field.insert(END, hanzi + " : " + pinyin + " : " + meaning + " \n")
+            self.text_field.insert(tk.END, hanzi + " : " + pinyin + " : " + meaning + " \n")
 
     
     def new_chapter(self):
-        
-        chapter = 1
+        chapter = self.number_chapters() + 1
         chapter_win = chapter_window(self, self.database, self.novel, chapter)
         self.withdraw()
         self.wait_window(chapter_win)
@@ -215,17 +180,17 @@ class novel_window(tk.Toplevel):
     def search_word(self):
         self.clean_txt()
         res = self.database.search_word(self.novel, self.word_ukw.get())
-        if res == None : print("not found")
-        else : print("found")
+        if res == None : self.text_field.insert(tk.END, "No occurence of " + self.word_ukw.get() + " \n")
+        else : self.text_field.insert(tk.END, res[0] + " : "  + res[1] + " : " + res[2] + "\n")
         
         
     def clean_txt(self):
-        self.text_field.config(state=NORMAL)
-        self.text_field.delete('1.0', END)
-        self.text_field.config(state=DISABLED)  
+        self.text_field.config(state= tk.NORMAL)
+        self.text_field.delete('1.0', tk.END)
+        self.text_field.config(state= tk.DISABLED)  
         
     def new_word(self):
-        return 0
+        self.database.new_word(self.novel, "hanzi", "pinyin" , "meaning")
         
         
 ########################################################################
@@ -254,28 +219,27 @@ class chapter_window(tk.Toplevel):
         button_vocab.pack(side = tk.TOP, anchor="c")
             
 
-        label_word = tk.Label(self, text = "New word")
+        button_new_word = tk.Button(self, text = "New word", command = self.new_word)
+        button_new_word.pack(side=tk.TOP,pady=30)
+        
         button_prev = tk.Button(self, text="Previous", command=self.destroy)
-
-        label_word.pack(side=tk.TOP,pady=30)
-
         button_prev.pack(side=tk.BOTTOM,anchor="e", padx=8, pady=8)
         
-        self.text_field = tk.Text(self, height = len(rows))
+        self.text_field = tk.Text(self, height = 1)
         self.text_field.pack(side = tk.BOTTOM, anchor = "c")
 
     def vocab(self):
-    self.clean_txt()
+        self.clean_txt()
         rows = self.database.get_vocab(self.novel, self.chapter)
         
         for (hanzi, pinyin, meaning) in rows :
-            self.text_field.insert(END, hanzi + " : " + pinyin + " : " + meaning + " \n")
+            self.text_field.insert(tk.END, hanzi + " : " + pinyin + " : " + meaning + " \n")
         
             
     def clean_txt(self):
-        self.text_field.config(state=NORMAL)
-        self.text_field.delete('1.0', END)
-        self.text_field.config(state=DISABLED)  
+        self.text_field.config(state= tk.NORMAL)
+        self.text_field.delete('1.0', tk.END)
+        self.text_field.config(state= tk.DISABLED)  
             
     
 
