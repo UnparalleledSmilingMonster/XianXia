@@ -19,11 +19,13 @@ class Database(object):
             );"""
 
         self.cur.execute(query_create_novels_table)
-        create_nove(self,"天影")
+
         
-    def create_novel(self,name):
-    	 query_add_novel = """INSERT INTO novels (name) VALUES ();"""
-    	 self.cur.execute(query_add_novel)
+    def create_novel(self, name):
+        query_add_novel = """INSERT INTO novels (name) VALUES (?);"""
+        self.cur.execute(query_add_novel,(name,))
+        self.commit()
+
 
 
 
