@@ -14,10 +14,16 @@ class Database(object):
     def instantiate(self):
         query_create_novels_table = """CREATE TABLE IF NOT EXISTS novels (
             id integer PRIMARY KEY,
-            name text NOT NULL
+            name text NOT NULL,
+            eng_name text
             );"""
 
         self.cur.execute(query_create_novels_table)
+        create_nove(self,"天影")
+        
+    def create_novel(self,name):
+    	 query_add_novel = """INSERT INTO novels (name) VALUES ();"""
+    	 self.cur.execute(query_add_novel)
 
 
 

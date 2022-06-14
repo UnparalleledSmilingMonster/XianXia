@@ -3,6 +3,12 @@
 
 This application is coded in Python 3.
 
-The requirements you will need :
+The required packages :
 - sqlite3 : pip install pysqlite3
 - tkinter : pip install tk
+
+
+
+*Disclaimer* : This application is in no way meant to be used for storing sensitive data.
+There is no encryption. It may be vulnerable to sql injection and so on...
+
