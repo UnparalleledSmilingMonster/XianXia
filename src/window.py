@@ -106,7 +106,49 @@ class new_novel_window(tk.Toplevel):
         
    
 
+############################################################################
 
+
+class load_window(tk.Toplevel):
+    def __init__(self, parent, db):
+        tk.Toplevel.__init__(self, parent)
+        self.database = db
+        self.parent = parent
+        self.set_window()
+        
+
+    def set_window(self):
+        self.title("XianXia")
+        self.geometry("700x300")
+        self.resizable(0,0)
+
+    def novel_list(self):
+        L = self.database.novel_list()
+        self.variable = tk.StringVar()
+        self.variable.set("Novel List") 
+        droplist_novels = tk.OptionMenu(self, self.variable, *L)
+        droplist_novels.pack(side=tk.TOP,anchor="c")
+        
+        ok = tk.Button(self, text = "Select novel", command = self.next)
+        ok.pack(side=tk.RIGHT, anchor="c")
+               
+        previous = tk.Button(self, text = "Cancel", command = self.cancel)
+        previous.pack(side=tk.LEFT, anchor="c")
+        
+
+    def next(self): 
+        self.parent.buffer_string = self.variable.get()
+        self.database.commit()
+        self.destroy()
+        
+    def cancel(self):
+        self.parent.cancel = True
+        self.destroy()
+
+
+
+
+########################################################################
 
 
 class novel_window(tk.Toplevel):
