@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QMessageBox
   
 debug  = True
 
@@ -30,6 +32,11 @@ class MainWindow(QMainWindow):
         button_load = QPushButton("Load Novel", parent = self)
         button_load.clicked.connect(self.load)
         button_load.move(60,15)
+
+        button_new_novel = QPushButton("New Novel Entry", parent = self)
+        button_new_novel.clicked.connect(self.new_novel)
+        button_load.move(60,45)
+
     
     def load(self):
         self.ld_window = LoadWindow(self, self.database)
@@ -37,6 +44,14 @@ class MainWindow(QMainWindow):
         self.ld_window.novel_list()     
         #if not self.cancel :
             #novel_win = novel_window(self, self.database, self.buffer_string)        
+        self.cancel = False
+
+    def new_novel(self):
+        self.nn_window = NewNovelWindow(self, self.database)
+        self.nn_window.show()
+        self.nn_window.create_novel()
+        #if not self.cancel :
+            #novel_win = novel_window(self, self.database, self.buffer_string)
         self.cancel = False
     
      
@@ -59,6 +74,7 @@ class LoadWindow(QWidget):
 
     def set_window(self):
         self.setWindowTitle("XianXia")
+
 
 
     def novel_list(self):
@@ -89,7 +105,53 @@ class LoadWindow(QWidget):
 
 
 
-########################################################################        
+#########################################################################
+
+class NewNovelWindow(QWidget):
+    def __init__(self, parent, db):
+        super().__init__()
+        self.set_window()
+        self.database = db
+        self.parent = parent
+        self.layout = QVBoxLayout(self)
+
+
+    def set_window(self):
+        self.setWindowTitle("XianXia")
+
+
+    def create_novel(self):
+        text = QLabel(text ="Name of the new novel : ", parent = self)
+        self.layout.addWidget(text)
+
+        self.text_input = QLineEdit(parent = self)
+        self.layout.addWidget(self.text_input)
+
+
+        ok = QPushButton("New Entry", parent = self)
+        ok.clicked.connect(self.forward)
+        self.layout.addWidget(ok)
+
+        previous = QPushButton("Cancel", parent = self)
+        previous.clicked.connect(self.cancel)
+        self.layout.addWidget(previous)
+
+
+    def cancel(self):
+        self.parent.cancel = True
+        self.database.commit()
+
+
+    def forward(self):
+        novel = self.text_input.text()
+        self.database.create_novel(novel)
+        QMessageBox.about(self, "Success !", "Novel entry " + novel + " created.")
+        self.parent.buffer_string = novel
+        self.database.commit()
+
+
+#########################################################################
+
         
    
 app = QApplication(sys.argv)

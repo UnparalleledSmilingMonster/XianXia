@@ -43,6 +43,9 @@ class Application(tk.Tk):
             novel_win = novel_window(self, self.database, self.buffer_string)        
         self.cancel = False
 
+
+
+
     def new_novel(self):
         nn_window = new_novel_window(self, self.database)
         nn_window.create_novel()
