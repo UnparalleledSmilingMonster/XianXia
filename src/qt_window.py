@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QComboBox
 from PyQt5.QtWidgets import QTextEdit 
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
@@ -37,7 +38,6 @@ class MainWindow(QWidget):
     def set_window(self):
         self.setWindowTitle("The XianXia Project")
         self.setGeometry(200, 200, 500, 700)
-        #self.setLayout(self.layout)
 
 
     
@@ -46,27 +46,28 @@ class MainWindow(QWidget):
     
         app_title = QLabel("THE XIANXIA PROJECT", parent=self)
         app_title.setFont(QFont('Sumi',50))
-        self.layout.addWidget(app_title, 0, 1, 0, 2)
+        self.layout.addWidget(app_title, 0, 0, 1, -2)
     
         button_load = QPushButton("Load Novel", parent = self)
         button_load.clicked.connect(self.load)
-        self.layout.addWidget(button_load, 1,2)
+        self.layout.addWidget(button_load, 1,1)
 
         button_new_novel = QPushButton("New Novel Entry", parent = self)
         button_new_novel.clicked.connect(self.new_novel)
-        self.layout.addWidget(button_new_novel, 2,2)
+        self.layout.addWidget(button_new_novel, 2,1)
         
         
         button_quit = QPushButton("Quit", parent = self)
         button_quit.clicked.connect(quit)
-        self.layout.addWidget(button_quit, 3,4)
+        self.layout.addWidget(button_quit, 4,2)
         
         
         if debug:
             button_reset = QPushButton("Reset DB", parent = self)
             button_reset.clicked.connect(self.reset)
-            self.layout.addWidget(button_reset, 3,0)
+            self.layout.addWidget(button_reset, 4,0)
         
+        self.setLayout(self.layout)
 
     
     def load(self):
@@ -74,15 +75,14 @@ class MainWindow(QWidget):
 
         self.ld_window.show()
         self.ld_window.novel_list()
+        loop = QEventLoop()
+        self.ld_window.setAttribute(Qt.WA_DeleteOnClose)
+        self.ld_window.destroyed.connect(loop.quit)
+        loop.exec()
          
         if not self.cancel :
-            self.ld_window.setAttribute(Qt.WA_DeleteOnClose)
-            loop = QEventLoop()
-            self.ld_window.destroyed.connect(loop.quit)
-            loop.exec()
             self.novel_win = NovelWindow(self, self.database, self.buffer_string)    
-            self.novel_win.show()
-                        
+            self.novel_win.show()                        
 
         self.cancel = False
 
@@ -90,11 +90,12 @@ class MainWindow(QWidget):
         self.nn_window = NewNovelWindow(self, self.database)
         self.nn_window.show()
         self.nn_window.create_novel()
-        if not self.cancel :
-            self.nn_window.setAttribute(Qt.WA_DeleteOnClose)
-            loop = QEventLoop()
-            self.nn_window.destroyed.connect(loop.quit)
-            loop.exec()
+        loop = QEventLoop()
+        self.nn_window.setAttribute(Qt.WA_DeleteOnClose)
+        self.nn_window.destroyed.connect(loop.quit)
+        loop.exec()
+
+        if not self.cancel :            
             self.novel_win = NovelWindow(self, self.database, self.buffer_string)
             self.novel_win.show()
         self.cancel = False
@@ -113,14 +114,14 @@ class LoadWindow(QWidget):
         super().__init__()
         self.database = db
         self.parent = parent
-        self.vlayout = QVBoxLayout(self) 
+        self.layout = QGridLayout(self) 
         self.set_window()
        
         
 
     def set_window(self):
         self.setWindowTitle("XianXia")
-        self.setGeometry(200, 200, 500, 700)
+        self.setGeometry(350, 550, 500, 300)
 
 
 
@@ -134,12 +135,13 @@ class LoadWindow(QWidget):
         previous.clicked.connect(self.cancel)
         
         self.novel_dropout = QComboBox(parent = self)
-        self.novel_dropout.setGeometry(100 , 10 , 150 , 30)
         self.novel_dropout.addItems(L)
-        self.vlayout.addWidget(self.novel_dropout)
+        self.layout.addWidget(self.novel_dropout, 0 ,0, 1 ,-2)
         
-        self.vlayout.addWidget(ok)
-        self.vlayout.addWidget(previous)
+        self.layout.addWidget(ok , 2 , 2)
+        self.layout.addWidget(previous, 2 , 0)
+        
+        self.setLayout(self.layout)
         
     def forward(self): 
         self.parent.buffer_string = self.novel_dropout.currentText()
@@ -202,7 +204,7 @@ class NovelWindow(QWidget):
         super().__init__()
         self.database = db
         self.novel = name
-        self.vlayout = QVBoxLayout(self)
+        self.layout = QGridLayout(self)
         self.set_window()
         self.define_widgets()
         
@@ -211,39 +213,67 @@ class NovelWindow(QWidget):
         self.setWindowTitle(self.novel)
         self.setGeometry(200, 200, 500, 700)
 
-    def define_widgets(self):
+    def define_widgets(self):        
         
         label_novel = QLabel(self.novel, parent = self)
-        self.vlayout.addWidget(label_novel)
+        label_novel.setFont(QFont('Sumi',20))
+        self.layout.addWidget(label_novel, 0 ,1)
         
        
         button_vocab = QPushButton(text = "Show all vocabulary", parent = self)
         button_vocab.clicked.connect(self.vocab)
-        self.vlayout.addWidget(button_vocab)
-         
+        self.layout.addWidget(button_vocab, 1 ,1)
+        
+        L = ["Chapter " + str(i) for i in range(self.number_chapters())]
+        self.chapters_dropout = QComboBox(parent = self)
+        self.chapters_dropout.setGeometry(100 , 10 , 150 , 30)
+        self.chapters_dropout.addItems(L)
+        self.layout.addWidget(self.chapters_dropout, 1 ,0)
+        
     
         button_chap = QPushButton("New Chapter", parent = self)
         button_chap.clicked.connect(self.new_chapter)
-        self.vlayout.addWidget(button_chap)
+        self.layout.addWidget(button_chap, 1, 2)
         
         button_new_word = QPushButton("New Word", parent = self)
         button_new_word.clicked.connect(self.new_word)
-        self.vlayout.addWidget(button_new_word)
+        self.layout.addWidget(button_new_word, 2, 1)
+        
+        label_hanzi = QLabel(self.tr("汉字"))
+        self.form_hanzi = QLineEdit(self)
+        label_hanzi.setBuddy(self.form_hanzi)
+        self.layout.addWidget(self.form_hanzi, 4, 0)
+        self.layout.addWidget(label_hanzi, 3, 0)
+        
+        label_pinyin = QLabel(self.tr("Pinyin"))
+        self.form_pinyin = QLineEdit(self)
+        label_pinyin.setBuddy(self.form_pinyin)
+        self.layout.addWidget(self.form_pinyin, 4, 1)
+        self.layout.addWidget(label_pinyin, 3, 1)
+        
+        label_meaning = QLabel(self.tr("Meaning"))
+        self.form_meaning = QLineEdit(self)
+        label_meaning.setBuddy(self.form_meaning)
+        self.layout.addWidget(self.form_meaning, 4, 2)
+        self.layout.addWidget(label_meaning, 3, 2)
         
         button_search = QPushButton("Search word", parent = self)
-        button_search.clicked.connect(self.search_word)
-        self.vlayout.addWidget(button_search)
+        button_search.clicked.connect(self.search_word)        
+        self.layout.addWidget(button_search, 5, 0)
         
+
         self.word_ukw = QLineEdit(parent = self)
-        self.vlayout.addWidget(self.word_ukw)
+        self.layout.addWidget(self.word_ukw, 5, 1)
 
 
         button_quit = QPushButton("Leave", parent = self)
         button_quit.clicked.connect(self.close)
-        self.vlayout.addWidget(button_quit)
+        self.layout.addWidget(button_quit, 6 ,2)
         
         self.text_field = QTextEdit(self)
-        self.vlayout.addWidget(self.text_field)
+        self.layout.addWidget(self.text_field, 8, 0, 1, -2)
+        
+        self.setLayout(self.layout)
     
     def number_chapters(self):
         return self.database.number_chapters(self.novel)[0]
@@ -264,6 +294,7 @@ class NovelWindow(QWidget):
         loop = QEventLoop()
         self.chapter_win.destroyed.connect(loop.quit)
         loop.exec()
+        self.reload_chapters()
         self.show()
     
     def search_word(self):
@@ -271,7 +302,11 @@ class NovelWindow(QWidget):
         res = self.database.search_word(self.novel, self.word_ukw.text())
         if res == None : self.text_field.insertPlainText( "No occurence of " + self.word_ukw.text() + " \n")
         else : self.text_field.insertPlainText( res[0] + " : "  + res[1] + " : " + res[2] + "\n")
-        
+    
+    def reload_chapters(self):
+        self.chapters_dropout.clear()
+        self.chapters_dropout.addItems(["Chapter " + str(i) for i in range(self.number_chapters())])
+    
         
     def new_word(self):
         self.database.new_word(self.novel, "hanzi", "pinyin" , "meaning")
@@ -301,8 +336,6 @@ class ChapterWindow(QWidget):
         button_vocab.clicked.connect(self.vocab)
         self.vlayout.addWidget(button_vocab)
          
-    
-        
         
         button_new_word = QPushButton("New Word", parent = self)
         button_new_word.clicked.connect(self.new_word)
@@ -312,26 +345,20 @@ class ChapterWindow(QWidget):
         button_search.clicked.connect(self.search_word)
         self.vlayout.addWidget(button_search)
        
-        button_prev = QPushButton("Previous", parent = self.close)
-        button_prev.clicked.connect(self.new_chapter)
+        button_prev = QPushButton("Previous", parent = self)
+        button_prev.clicked.connect(self.close)
         self.vlayout.addWidget(button_prev)
         
         self.text_field = QTextEdit(self)
         self.vlayout.addWidget(self.text_field)
 
     def vocab(self):
-        self.clean_txt()
+        self.text_field.clear()
         rows = self.database.get_vocab(self.novel, self.chapter)
         
         for (hanzi, pinyin, meaning) in rows :
             self.text_field.insert(tk.END, hanzi + " : " + pinyin + " : " + meaning + " \n")
-        
-            
-    def clean_txt(self):
-        self.text_field.config(state= tk.NORMAL)
-        self.text_field.delete('1.0', tk.END)
-        self.text_field.config(state= tk.DISABLED)  
-            
+       
     
     def search_word(self):
         self.text_field.clear()
@@ -340,7 +367,7 @@ class ChapterWindow(QWidget):
         else : self.text_field.insertPlainText( res[0] + " : "  + res[1] + " : " + res[2] + "\n")
         
     def new_word(self):
-        return 0
+        self.database.new_word(self.novel, "hanzi", "pinyin" , "meaning", chapter = self.chapter)
 
 
         
