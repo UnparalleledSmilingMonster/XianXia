@@ -5,8 +5,10 @@ This application is coded in Python 3.
 
 The required packages :
 - sqlite3 : `pip install pysqlite3`
-- tkinter : `pip install tk`
+- pyQt5 : `pip install pyqt5`
 
+
+Fonts : The OpenSource font Sumi is used. 
 
 
 *Disclaimer* : This application is in no way meant to be used for storing sensitive data.
