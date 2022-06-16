@@ -41,6 +41,7 @@ class Database(object):
             
         self.cur.execute(query_create_novel)
         self.commit()
+        return novel_id
     
     def number_chapters(self, novel_id):
         query_nb_chapters = """ SELECT COUNT( DISTINCT chapter) FROM """ + self.novel_table_name(novel_id) + """ ; """
@@ -55,15 +56,20 @@ class Database(object):
     def novel_table_name(self, novel_id):
         return self.scrub(self.novel_name(novel_id)) + str(novel_id)
     
-
-    
-    def search_word(self, novel_id, word):
+    def search_word(self, novel_id, hanzi):
         query_search_word = """SELECT hanzi, pinyin, meaning FROM """ + self.novel_table_name(novel_id) + """ 
             WHERE hanzi == ? ; """
-        self.cur.execute(query_search_word, (word,))
+        self.cur.execute(query_search_word, (hanzi,))
         res = self.cur.fetchone()
         return res
     
+    def similarities(self, novel_id, hanzi):
+        query_similarities = """SELECT hanzi, pinyin, meaning FROM """ + self.novel_table_name(novel_id) + """ 
+            WHERE hanzi LIKE ? ; """
+        self.cur.execute(query_similarities, ("%"+hanzi+"%",))
+        res = self.cur.fetchall()
+        return res
+        
 
 
     def close(self):
@@ -89,6 +95,9 @@ class Database(object):
         rows = self.cur.fetchall()
         return rows
   
+    def exists(self, novel_id, hanzi):
+        if self.search_word(novel_id, hanzi) is not None : return True
+        return False
     
     
     
