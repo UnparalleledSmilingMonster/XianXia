@@ -27,8 +27,10 @@ class Database(object):
     def create_novel(self, name):
         query_add_novel = """INSERT INTO novels (name) VALUES (?);"""
         self.cur.execute(query_add_novel,(name,))
+        self.cur.execute("""SELECT max(id) FROM novels;""")
+        novel_id = self.cur.fetchone()[0]
         
-        query_create_novel = """CREATE TABLE IF NOT EXISTS """ + self.scrub(name) + """ (
+        query_create_novel = """CREATE TABLE IF NOT EXISTS """ + self.scrub(name) + str(novel_id) + """ (
             id integer PRIMARY KEY,
             hanzi text NOT NULL,
             pinyin text NOT NULL,
@@ -40,15 +42,23 @@ class Database(object):
         self.cur.execute(query_create_novel)
         self.commit()
     
-    def number_chapters(self, novel):
-        query_nb_chapters = """ SELECT COUNT( DISTINCT chapter) FROM """ + self.scrub(novel) + """ ; """
+    def number_chapters(self, novel_id):
+        query_nb_chapters = """ SELECT COUNT( DISTINCT chapter) FROM """ + self.novel_table_name(novel_id) + """ ; """
         self.cur.execute(query_nb_chapters)
         return self.cur.fetchone()
     
+    def novel_name(self, novel_id):
+        query_novel_name = """ SELECT name FROM novels WHERE id == ?; """
+        self.cur.execute(query_novel_name, (novel_id,))
+        return self.cur.fetchone()
+    
+    def novel_table_name(self, novel_id):
+        return self.scrub(self.novel_name(novel_id)) + str(novel_id)
+    
 
     
-    def search_word(self, novel, word):
-        query_search_word = """SELECT hanzi, pinyin, meaning FROM """ + self.scrub(novel) + """ 
+    def search_word(self, novel_id, word):
+        query_search_word = """SELECT hanzi, pinyin, meaning FROM """ + self.novel_table_name(novel_id) + """ 
             WHERE hanzi == ? ; """
         self.cur.execute(query_search_word, (word,))
         res = self.cur.fetchone()
@@ -62,28 +72,28 @@ class Database(object):
 
 
     def novel_list(self):
-        self.cur.execute(""" SELECT name from novels""")
+        self.cur.execute(""" SELECT id,name from novels""")
         rows = self.cur.fetchall()
-        return [i for (i,) in rows]
+        return rows
 
     
-    def get_vocab(self, name, chapter = None):
+    def get_vocab(self, novel_id, chapter = None):
         if chapter == None :
-            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.scrub(name)  + """ ;"""
+            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.novel_table_name(novel_id)  + """;"""
             self.cur.execute(query_add_novel)
         else :
-            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.scrub(name)  + """ 
-                WHERE chapter == ?"""
+            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.novel_table_name(novel_id)  + """ 
+                WHERE chapter == ?;"""
             self.cur.execute(query_add_novel, (chapter, ))
         rows = self.cur.fetchall()
         return rows
    
-    def new_word(self, novel, hanzi, pinyin, meaning, chapter = None):
+    def new_word(self, novel_id, hanzi, pinyin, meaning, chapter = None):
         if chapter == None :
-            query_new_word = """ INSERT INTO """ + self.scrub(novel) + """ (hanzi, pinyin, meaning) values (?,?,?);"""
+            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning) values (?,?,?);"""
             self.cur.execute(query_new_word, (hanzi, pinyin, meaning))
         else :
-            query_new_word = """ INSERT INTO """ + self.scrub(novel) + """ (hanzi, pinyin, meaning, chapter) values (?,?,?,?);"""
+            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning, chapter) values (?,?,?,?);"""
             self.cur.execute(query_new_word, (hanzi, pinyin, meaning, chapter))
         self.commit()
         
