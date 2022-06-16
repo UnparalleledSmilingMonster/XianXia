@@ -213,8 +213,11 @@ class NovelWindow(QWidget):
         self.database = db
         self.novel = name
         self.layout = QGridLayout(self)
+        self.text_font = QFont()
+        self.text_font.setPointSize(13)
         self.set_window()
         self.define_widgets()
+      
         
         
     def set_window(self):
@@ -288,6 +291,7 @@ class NovelWindow(QWidget):
         self.layout.addWidget(button_quit, 7 ,2)
         
         self.text_field = QTextEdit(self)
+        self.text_field.setFont(self.text_font)
         self.layout.addWidget(self.text_field, 8, 0, 1, -2)
         
         self.setLayout(self.layout)
