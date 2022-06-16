@@ -20,3 +20,10 @@ The pinyin are scraped either from **omgchinese** or **yabla**.
 This application is in no way meant to be used for storing sensitive data.
 There is no encryption. It may be vulnerable to sql injection and so on...
 
+## Build:
+After installin the aforementionned packages. Execute the script *build.sh*.
+
+
+If you want to clear the database, in the file `qt_window.py` make `debug = True` it will enable the "Reset DB" button.
+
+**Enjoy folks !** 

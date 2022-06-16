@@ -1,15 +1,26 @@
 import sqlite3 as sql
+import sys
+import os
 
 class Database(object):
 
-    DB_LOCATION = "../data/xianxia_db.sqlite"
+    DB_LOCATION_FILE = "../data/xianxia_db.sqlite"
+    DB_LOCATION_EXE = "./data/xianxia_db.sqlite"
+    
     TABLE_PARAMETER = "{TABLE_PARAMETER}"
     DROP_TABLE_SQL = f"DROP TABLE {TABLE_PARAMETER};"
     GET_TABLES_SQL = "SELECT name FROM sqlite_master WHERE type='table';"
 
     def __init__(self):
         """Initialize db class variables"""
-        self.connection = sql.connect(Database.DB_LOCATION)
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+            config_path = os.path.join(application_path, Database.DB_LOCATION_EXE)
+        elif __file__:
+            application_path = os.path.dirname(__file__)            
+            config_path = os.path.join(application_path, Database.DB_LOCATION_FILE)
+            
+        self.connection = sql.connect(config_path)
         self.cur = self.connection.cursor()
         self.instantiate()
 

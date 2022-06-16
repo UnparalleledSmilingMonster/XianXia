@@ -1,4 +1,5 @@
 import sys  
+import os
 from db_handle import Database
 from scraper import omgchinese_pinyin_scraper, omgchinese_meaning_scraper
 
@@ -22,10 +23,24 @@ from PyQt5.QtGui import QFontDatabase
 
 
 
-debug  = True
+debug  = False
+
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+    background_path = os.path.join(application_path, "./data/cover.jpeg" )
+    font_sumi_path = os.path.join(application_path, "./fonts/Sumi.otf" )
+    font_canglong_path = os.path.join(application_path, "./fonts/Long_Cang/LongCang-Regular.ttf" )
+elif __file__:
+    application_path = os.path.dirname(__file__)            
+    background_path = os.path.join(application_path, "../data/cover.jpeg")
+    font_sumi_path = os.path.join(application_path, "../fonts/Sumi.otf" )
+    font_canglong_path = os.path.join(application_path, "../fonts/Long_Cang/LongCang-Regular.ttf" )
+
 
 
 class MainWindow(QWidget):
+
+    
 
     def __init__(self):
         super().__init__()
@@ -33,7 +48,7 @@ class MainWindow(QWidget):
         self.layout = QGridLayout(self) 
         self.buffer_int = -1
         self.cancel = False
-        self.fonts = QFontDatabase.addApplicationFont("../fonts/Sumi.otf")
+        self.fonts = QFontDatabase.addApplicationFont(font_sumi_path)
         self.set_window()
         self.define_widgets()     
         
@@ -223,7 +238,7 @@ class NovelWindow(QWidget):
         self.novel_id = novel_id
         self.novel = self.database.novel_name(self.novel_id)[0]
         self.layout = QGridLayout(self)
-        self.fonts = QFontDatabase.addApplicationFont("../fonts/Long_Cang/LongCang-Regular.ttf")
+        self.fonts = QFontDatabase.addApplicationFont(font_canglong_path)
         self.text_font = QFont()
         self.text_font.setPointSize(14)
         self.word_types = ["vocabulary", "protagonist", "place", "artifact"]
@@ -612,7 +627,7 @@ app = QApplication(sys.argv)
 
 xianxia = MainWindow()
 xianxia.setAttribute(Qt.WA_StyledBackground)      
-xianxia.setStyleSheet("""MainWindow{border-image : url(../data/cover.jpeg) 0 0 0 0;}""")
+xianxia.setStyleSheet("""MainWindow{border-image : url(""" +  background_path + """) 0 0 0 0;}""")
 xianxia.show()
   
 # Run application's main loop
