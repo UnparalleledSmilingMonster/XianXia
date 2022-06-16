@@ -372,6 +372,8 @@ class ChapterWindow(QWidget):
         self.novel_id = novel_id
         self.novel = self.database.novel_name(self.novel_id)
         self.chapter = chapter
+        self.text_font = QFont()
+        self.text_font.setPointSize(13)
         self.layout = QGridLayout(self)
         self.set_window()
         self.define_widgets()
@@ -428,6 +430,7 @@ class ChapterWindow(QWidget):
 
         
         self.text_field = QTextEdit(self)
+        self.text_field.setFont(self.text_font)
         self.layout.addWidget(self.text_field, 7 , 0, 1 , -2)
 
     def vocab(self):
@@ -451,8 +454,7 @@ class ChapterWindow(QWidget):
         self.form_hanzi.clear()
         self.form_pinyin.clear()
         self.form_meaning.clear()
-        self.database.new_word(self.novel_id, hanzi, pinyin , meaning, chapter = self.chapter)
-    
+        self.database.new_word(self.novel_id, hanzi, pinyin , meaning, chapter = self.chapter)   
 
         
 

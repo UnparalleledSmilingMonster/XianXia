@@ -1,11 +1,13 @@
-**XianXia Project : Learn Chinese while reading novels !**
+**The XianXia Project : Learn Chinese while reading novels !**
 
 
-This application is coded in Python 3.
+This application is coded with Python 3.
 
 The required packages :
 - sqlite3 : `pip install pysqlite3`
 - pyQt5 : `pip install pyqt5`
+- requests : `pip install requests`
+- beautifulsoup : `pip3 install beautifulsoup4`
 
 
 Fonts : The OpenSource font Sumi is used. 
