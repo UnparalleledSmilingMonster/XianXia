@@ -12,6 +12,7 @@ The required packages :
 
 Fonts : The OpenSource font Sumi is used. 
 
+Web-scraping : The pinyin are scraped either from **yabla** or **omgchinese**.
 
 *Disclaimer* : This application is in no way meant to be used for storing sensitive data.
 There is no encryption. It may be vulnerable to sql injection and so on...

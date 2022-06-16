@@ -1,5 +1,7 @@
 import sys  
 from db_handle import Database
+from scraper import omgchinese_pinyin_scraper, omgchinese_meaning_scraper
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QLabel
@@ -260,9 +262,13 @@ class NovelWindow(QWidget):
         button_new_word.clicked.connect(self.new_word)
         self.layout.addWidget(button_new_word, 3, 1)
         
-        self.box_autofill = QCheckBox("Pinyin autofill", parent = self)
-        self.box_autofill.setChecked(True)
-        self.layout.addWidget(self.box_autofill, 3 ,2 )
+        self.button_suggest = QPushButton("Suggest meaning", parent = self)
+        self.button_suggest.clicked.connect(self.suggest_meaning)
+        self.layout.addWidget(self.button_suggest, 6 ,2)        
+        
+        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
+        self.box_autofill.clicked.connect(self.pinyin_autofill)        
+        self.layout.addWidget(self.box_autofill, 6 ,1 )
         
         label_hanzi = QLabel(self.tr("汉字"))
         self.form_hanzi = QLineEdit(self)
@@ -284,20 +290,20 @@ class NovelWindow(QWidget):
         
         button_search = QPushButton("Search word", parent = self)
         button_search.clicked.connect(self.search_word)        
-        self.layout.addWidget(button_search, 6, 0)
+        self.layout.addWidget(button_search, 7, 0)
         
 
         self.word_ukw = QLineEdit(parent = self)
-        self.layout.addWidget(self.word_ukw, 6, 1)
+        self.layout.addWidget(self.word_ukw, 7, 1)
 
 
         button_quit = QPushButton("Leave", parent = self)
         button_quit.clicked.connect(self.menu)
-        self.layout.addWidget(button_quit, 7 ,2)
+        self.layout.addWidget(button_quit, 8,2)
         
         self.text_field = QTextEdit(self)
         self.text_field.setFont(self.text_font)
-        self.layout.addWidget(self.text_field, 8, 0, 1, -2)
+        self.layout.addWidget(self.text_field, 9, 0, 1, -2)
         
         self.setLayout(self.layout)
     
@@ -362,6 +368,15 @@ class NovelWindow(QWidget):
         self.form_meaning.clear()
         self.database.new_word(self.novel_id, hanzi, pinyin , meaning)
         
+    def pinyin_autofill(self):
+        hanzi = self.form_hanzi.text()
+        self.form_pinyin.setText(omgchinese_pinyin_scraper(hanzi))
+        
+    def suggest_meaning(self):
+        self.text_field.clear()
+        hanzi = self.form_hanzi.text()
+        self.text_field.insertPlainText(omgchinese_meaning_scraper(hanzi))
+        
         
 ########################################################################
 
@@ -394,9 +409,13 @@ class ChapterWindow(QWidget):
         button_new_word.clicked.connect(self.new_word)
         self.layout.addWidget(button_new_word, 2, 1)
         
-        self.box_autofill = QCheckBox("Pinyin autofill", parent = self)
-        self.box_autofill.setChecked(True)
-        self.layout.addWidget(self.box_autofill, 2 ,2 )
+        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
+        self.box_autofill.clicked.connect(self.pinyin_autofill)
+        self.layout.addWidget(self.box_autofill, 5 ,1)
+        
+        self.button_suggest = QPushButton("Suggest meaning", parent = self)
+        self.button_suggest.clicked.connect(self.suggest_meaning)
+        self.layout.addWidget(self.button_suggest, 5 ,2)        
         
         label_hanzi = QLabel(self.tr("汉字"))
         self.form_hanzi = QLineEdit(self)
@@ -432,14 +451,23 @@ class ChapterWindow(QWidget):
         self.text_field = QTextEdit(self)
         self.text_field.setFont(self.text_font)
         self.layout.addWidget(self.text_field, 7 , 0, 1 , -2)
-
+    
+    
+    def pinyin_autofill(self) :
+        hanzi = self.form_hanzi.text()
+        self.form_pinyin.setText(omgchinese_pinyin_scraper(hanzi))
+            
+    def suggest_meaning(self):
+        self.text_field.clear()
+        hanzi = self.form_hanzi.text()
+        self.text_field.insertPlainText(omgchinese_meaning_scraper(hanzi))
+      
     def vocab(self):
         self.text_field.clear()
         rows = self.database.get_vocab(self.novel_id, self.chapter)
         
         for (hanzi, pinyin, meaning) in rows :
-            self.text_field.insertPlainText( hanzi + " : " + pinyin + " : " + meaning + " \n")
-       
+            self.text_field.insertPlainText( hanzi + " : " + pinyin + " : " + meaning + " \n")       
     
     def search_word(self):
         self.text_field.clear()
