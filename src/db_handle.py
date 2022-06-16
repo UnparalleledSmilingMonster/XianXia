@@ -77,24 +77,28 @@ class Database(object):
         return rows
 
     
-    def get_vocab(self, novel_id, chapter = None):
+    def get_vocab(self, novel_id, word_type, chapter = None):
         if chapter == None :
-            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.novel_table_name(novel_id)  + """;"""
-            self.cur.execute(query_add_novel)
+            query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.novel_table_name(novel_id)  + """
+             WHERE type == ?;"""
+            self.cur.execute(query_add_novel, (word_type,))
         else :
             query_add_novel = """SELECT hanzi, pinyin, meaning FROM """   + self.novel_table_name(novel_id)  + """ 
-                WHERE chapter == ?;"""
-            self.cur.execute(query_add_novel, (chapter, ))
+                WHERE type == ? AND chapter == ? ;"""
+            self.cur.execute(query_add_novel, (word_type, chapter))
         rows = self.cur.fetchall()
         return rows
-   
-    def new_word(self, novel_id, hanzi, pinyin, meaning, chapter = None):
+  
+    
+    
+    
+    def new_word(self, novel_id, hanzi, pinyin, meaning, word_type, chapter = None):
         if chapter == None :
-            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning) values (?,?,?);"""
-            self.cur.execute(query_new_word, (hanzi, pinyin, meaning))
+            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning, type) values (?,?,?,?);"""
+            self.cur.execute(query_new_word, (hanzi, pinyin, meaning, word_type))
         else :
-            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning, chapter) values (?,?,?,?);"""
-            self.cur.execute(query_new_word, (hanzi, pinyin, meaning, chapter))
+            query_new_word = """ INSERT INTO """ + self.novel_table_name(novel_id) + """ (hanzi, pinyin, meaning, type, chapter) values (?,?,?,?,?);"""
+            self.cur.execute(query_new_word, (hanzi, pinyin, meaning, word_type, chapter))
         self.commit()
         
     

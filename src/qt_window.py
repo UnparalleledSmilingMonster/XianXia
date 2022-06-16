@@ -222,6 +222,7 @@ class NovelWindow(QWidget):
         self.layout = QGridLayout(self)
         self.text_font = QFont()
         self.text_font.setPointSize(13)
+        self.word_types = ["vocabulary", "protagonist", "place", "artifact"]
         self.set_window()
         self.define_widgets()
       
@@ -229,13 +230,13 @@ class NovelWindow(QWidget):
         
     def set_window(self):
         self.setWindowTitle(self.novel)
-        self.setGeometry(200, 200, 500, 700)
+        self.setGeometry(200, 200, 800, 900)
 
     def define_widgets(self):        
         
         label_novel = QLabel(self.novel, parent = self)
         label_novel.setFont(QFont('Sumi',30))
-        self.layout.addWidget(label_novel, 0 ,1)
+        self.layout.addWidget(label_novel, 0 ,2)
         
         
         button_chap = QPushButton("Go to", parent = self)
@@ -250,11 +251,24 @@ class NovelWindow(QWidget):
        
         button_chap = QPushButton("New Chapter", parent = self)
         button_chap.clicked.connect(self.new_chapter)
-        self.layout.addWidget(button_chap, 2, 0)
+        self.layout.addWidget(button_chap, 1, 2)        
         
-        button_vocab = QPushButton(text = "Show all vocabulary", parent = self)
-        button_vocab.clicked.connect(self.vocab)
-        self.layout.addWidget(button_vocab, 2 ,1)
+        
+        button_vocab = QPushButton(text = "Show vocabulary", parent = self)
+        button_vocab.clicked.connect(lambda : self.vocab(self.word_types[0]))
+        self.layout.addWidget(button_vocab, 2 ,0)
+        
+        button_chararacters = QPushButton(text = "Show protagonists", parent = self)
+        button_chararacters.clicked.connect(lambda : self.vocab(self.word_types[1]))
+        self.layout.addWidget(button_chararacters, 2 ,1)
+        
+        button_places = QPushButton(text = "Show places", parent = self)
+        button_places.clicked.connect(lambda : self.vocab(self.word_types[2]))
+        self.layout.addWidget(button_places, 2 ,2)
+        
+        button_artifacts = QPushButton(text = "Show artifacts", parent = self)
+        button_artifacts.clicked.connect(lambda : self.vocab(self.word_types[3]))
+        self.layout.addWidget(button_artifacts, 2 ,3)
         
     
        
@@ -262,13 +276,6 @@ class NovelWindow(QWidget):
         button_new_word.clicked.connect(self.new_word)
         self.layout.addWidget(button_new_word, 3, 1)
         
-        self.button_suggest = QPushButton("Suggest meaning", parent = self)
-        self.button_suggest.clicked.connect(self.suggest_meaning)
-        self.layout.addWidget(self.button_suggest, 6 ,2)        
-        
-        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
-        self.box_autofill.clicked.connect(self.pinyin_autofill)        
-        self.layout.addWidget(self.box_autofill, 6 ,1 )
         
         label_hanzi = QLabel(self.tr("汉字"))
         self.form_hanzi = QLineEdit(self)
@@ -288,6 +295,22 @@ class NovelWindow(QWidget):
         self.layout.addWidget(self.form_meaning, 5, 2)
         self.layout.addWidget(label_meaning, 4, 2)
         
+        label_type = QLabel(self.tr("Type"))
+        self.dropout_type = QComboBox(self)
+        self.dropout_type.addItems(self.word_types)
+        label_type.setBuddy(self.dropout_type)
+        self.layout.addWidget(self.dropout_type, 5, 3)
+        self.layout.addWidget(label_type, 4, 3)
+        
+        self.button_suggest = QPushButton("Suggest meaning", parent = self)
+        self.button_suggest.clicked.connect(self.suggest_meaning)
+        self.layout.addWidget(self.button_suggest, 6 ,2)        
+        
+        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
+        self.box_autofill.clicked.connect(self.pinyin_autofill)        
+        self.layout.addWidget(self.box_autofill, 6 ,1 )
+        
+        
         button_search = QPushButton("Search word", parent = self)
         button_search.clicked.connect(self.search_word)        
         self.layout.addWidget(button_search, 7, 0)
@@ -303,6 +326,7 @@ class NovelWindow(QWidget):
         
         self.text_field = QTextEdit(self)
         self.text_field.setFont(self.text_font)
+        self.text_field.setReadOnly(True)
         self.layout.addWidget(self.text_field, 9, 0, 1, -2)
         
         self.setLayout(self.layout)
@@ -329,9 +353,9 @@ class NovelWindow(QWidget):
             self.show()
     
      
-    def vocab(self):
+    def vocab(self, word_type):
         self.text_field.clear()
-        rows = self.database.get_vocab(self.novel_id)    
+        rows = self.database.get_vocab(self.novel_id, word_type)    
         for (hanzi, pinyin, meaning) in rows :
             self.text_field.insertPlainText( hanzi + " : " + pinyin + " : " + meaning + " \n")
 
@@ -341,12 +365,8 @@ class NovelWindow(QWidget):
         self.chapter_win = ChapterWindow(self, self.database, self.novel_id, chapter)
         self.chapter_win.show()
         self.hide()
-        self.chapter_win.setAttribute(Qt.WA_DeleteOnClose)
-        loop = QEventLoop()
-        self.chapter_win.destroyed.connect(loop.quit)
-        loop.exec()
         self.reload_chapters()
-        self.show()
+
     
     def search_word(self):
         self.text_field.clear()
@@ -363,10 +383,11 @@ class NovelWindow(QWidget):
         hanzi = self.form_hanzi .text()
         pinyin = self.form_pinyin.text()
         meaning = self.form_meaning.text()
+        word_type = self.dropout_type.currentText()
         self.form_hanzi.clear()
         self.form_pinyin.clear()
         self.form_meaning.clear()
-        self.database.new_word(self.novel_id, hanzi, pinyin , meaning)
+        self.database.new_word(self.novel_id, hanzi, pinyin , meaning, word_type)
         
     def pinyin_autofill(self):
         hanzi = self.form_hanzi.text()
@@ -377,12 +398,13 @@ class NovelWindow(QWidget):
         hanzi = self.form_hanzi.text()
         self.text_field.insertPlainText(omgchinese_meaning_scraper(hanzi))
         
-        
+    
 ########################################################################
 
 class ChapterWindow(QWidget):
     def __init__(self, parent, db, novel_id, chapter ):
         super().__init__()
+        self.parent = parent
         self.database = db
         self.novel_id = novel_id
         self.novel = self.database.novel_name(self.novel_id)
@@ -390,6 +412,7 @@ class ChapterWindow(QWidget):
         self.text_font = QFont()
         self.text_font.setPointSize(13)
         self.layout = QGridLayout(self)
+        self.word_types = ["vocabulary", "protagonist", "place", "artifact"]
         self.set_window()
         self.define_widgets()
 
@@ -401,22 +424,26 @@ class ChapterWindow(QWidget):
     def define_widgets(self):
        
         button_vocab = QPushButton(text = "Show vocabulary", parent = self)
-        button_vocab.clicked.connect(self.vocab)
-        self.layout.addWidget(button_vocab, 1 ,1)
+        button_vocab.clicked.connect(lambda : self.vocab(self.word_types[0]))
+        self.layout.addWidget(button_vocab, 1 ,0)
+        
+        button_chararacters = QPushButton(text = "Show protagonists", parent = self)
+        button_chararacters.clicked.connect(lambda : self.vocab(self.word_types[1]))
+        self.layout.addWidget(button_chararacters, 1 ,1)
+        
+        button_places = QPushButton(text = "Show places", parent = self)
+        button_places.clicked.connect(lambda : self.vocab(self.word_types[2]))
+        self.layout.addWidget(button_places, 1,2)
+        
+        button_artifacts = QPushButton(text = "Show artifacts", parent = self)
+        button_artifacts.clicked.connect(lambda : self.vocab(self.word_types[3]))
+        self.layout.addWidget(button_artifacts, 1 ,3)
          
         
         button_new_word = QPushButton("New Word", parent = self)
         button_new_word.clicked.connect(self.new_word)
         self.layout.addWidget(button_new_word, 2, 1)
-        
-        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
-        self.box_autofill.clicked.connect(self.pinyin_autofill)
-        self.layout.addWidget(self.box_autofill, 5 ,1)
-        
-        self.button_suggest = QPushButton("Suggest meaning", parent = self)
-        self.button_suggest.clicked.connect(self.suggest_meaning)
-        self.layout.addWidget(self.button_suggest, 5 ,2)        
-        
+                    
         label_hanzi = QLabel(self.tr("汉字"))
         self.form_hanzi = QLineEdit(self)
         label_hanzi.setBuddy(self.form_hanzi)
@@ -435,24 +462,46 @@ class ChapterWindow(QWidget):
         self.layout.addWidget(self.form_meaning, 4, 2)
         self.layout.addWidget(label_meaning, 3, 2)
         
+        label_type = QLabel(self.tr("Type"))
+        self.dropout_type = QComboBox(self)
+        self.dropout_type.addItems(self.word_types)
+        label_type.setBuddy(self.dropout_type)
+        self.layout.addWidget(self.dropout_type, 4, 3)
+        self.layout.addWidget(label_type, 3, 3)
+        
+        self.button_suggest = QPushButton("Suggest meaning", parent = self)
+        self.button_suggest.clicked.connect(self.suggest_meaning)
+        self.layout.addWidget(self.button_suggest, 5 ,2)        
+        
+        self.box_autofill = QPushButton("Pinyin autofill", parent = self)
+        self.box_autofill.clicked.connect(self.pinyin_autofill)        
+        self.layout.addWidget(self.box_autofill, 5 ,1 )
+        
+        
+        
         button_search = QPushButton("Search word", parent = self)
         button_search.clicked.connect(self.search_word)
-        self.layout.addWidget(button_search, 5, 0)
+        self.layout.addWidget(button_search, 6, 0)
         
         self.word_ukw = QLineEdit(parent = self)
-        self.layout.addWidget(self.word_ukw, 5, 1)
+        self.layout.addWidget(self.word_ukw, 6, 1)
        
         button_prev = QPushButton("Previous", parent = self)
-        button_prev.clicked.connect(self.close)
-        self.layout.addWidget(button_prev, 6 , 0)
+        button_prev.clicked.connect(self.menu)
+        self.layout.addWidget(button_prev,  7, 0)
         
 
         
         self.text_field = QTextEdit(self)
         self.text_field.setFont(self.text_font)
-        self.layout.addWidget(self.text_field, 7 , 0, 1 , -2)
+        self.text_field.setReadOnly(True)
+        self.layout.addWidget(self.text_field, 8 , 0, 1 , -2)
     
-    
+    def menu(self):
+        self.parent.show()
+        self.close()
+        
+        
     def pinyin_autofill(self) :
         hanzi = self.form_hanzi.text()
         self.form_pinyin.setText(omgchinese_pinyin_scraper(hanzi))
@@ -462,13 +511,13 @@ class ChapterWindow(QWidget):
         hanzi = self.form_hanzi.text()
         self.text_field.insertPlainText(omgchinese_meaning_scraper(hanzi))
       
-    def vocab(self):
+    def vocab(self, word_type):
         self.text_field.clear()
-        rows = self.database.get_vocab(self.novel_id, self.chapter)
-        
+        rows = self.database.get_vocab(self.novel_id, word_type, self.chapter)    
         for (hanzi, pinyin, meaning) in rows :
-            self.text_field.insertPlainText( hanzi + " : " + pinyin + " : " + meaning + " \n")       
-    
+            self.text_field.insertPlainText( hanzi + " : " + pinyin + " : " + meaning + " \n")
+            
+            
     def search_word(self):
         self.text_field.clear()
         res = self.database.search_word(self.novel_id, self.word_ukw.text())
@@ -479,10 +528,11 @@ class ChapterWindow(QWidget):
         hanzi = self.form_hanzi .text()
         pinyin = self.form_pinyin.text()
         meaning = self.form_meaning.text()
+        word_type = self.dropout_type.currentText()
         self.form_hanzi.clear()
         self.form_pinyin.clear()
         self.form_meaning.clear()
-        self.database.new_word(self.novel_id, hanzi, pinyin , meaning, chapter = self.chapter)   
+        self.database.new_word(self.novel_id, hanzi, pinyin , meaning, word_type, chapter = self.chapter)   
 
         
 

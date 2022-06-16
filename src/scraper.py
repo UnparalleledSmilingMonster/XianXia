@@ -9,8 +9,9 @@ def yabla_scraper(hanzi):
     soup = BeautifulSoup(page.content, "html.parser")
 
     result = soup.find(id="search_results")
+    if result == None : return ""
+    
     pinyin = result.find("span", class_="pinyin").text
-
     return pinyin
 
 def omgchinese_pinyin_scraper(hanzi):
@@ -19,8 +20,9 @@ def omgchinese_pinyin_scraper(hanzi):
     soup = BeautifulSoup(page.content, "html.parser")
     
     result = soup.find("div", {"class": "pinyin"})
-    pinyin = result.find("pinyin-color")["pinyin"] 
+    if result == None : return ""
     
+    pinyin = result.find("pinyin-color")["pinyin"]     
     return pinyin
     
     
@@ -31,8 +33,9 @@ def omgchinese_meaning_scraper(hanzi):
     soup = BeautifulSoup(page.content, "html.parser")
     
     result = soup.find("span", {"class": "uu-mslash"})
-    meaning = result.text
+    if result == None : return ""
     
+    meaning = result.text   
     return meaning
     
     
