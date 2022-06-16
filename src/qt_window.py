@@ -242,7 +242,7 @@ class NovelWindow(QWidget):
         
         label_novel = QLabel(self.novel, parent = self)
         label_novel.setFont(QFont('LongCang', 40))
-        self.layout.addWidget(label_novel,0 ,1, alignment=Qt.AlignRight)
+        self.layout.addWidget(label_novel,0 ,1,1,2, alignment=Qt.AlignCenter)
         
         
         button_chap = QPushButton("Go to", parent = self)
@@ -335,6 +335,9 @@ class NovelWindow(QWidget):
         self.text_field.setReadOnly(True)
         self.layout.addWidget(self.text_field, 9, 0, 1, -3)
         
+        columns = self.layout.columnCount() 
+        for i in range(columns):
+            self.layout.setColumnMinimumWidth(i, self.width() // columns )
         self.setLayout(self.layout)
     
     def menu(self):
@@ -455,7 +458,9 @@ class ChapterWindow(QWidget):
 
     def set_window(self):
         self.setWindowTitle("Chapter " + str(self.chapter))
-        self.setGeometry(200, 200, 500, 700)
+        self.setGeometry(200, 200, 800, 900)
+        self.setFixedWidth(800)
+        self.setFixedHeight(900) 
 
 
     def define_widgets(self):
