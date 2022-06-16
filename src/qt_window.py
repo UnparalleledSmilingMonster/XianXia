@@ -232,7 +232,7 @@ class NovelWindow(QWidget):
         button_chap.clicked.connect(self.go_to_chapter)
         self.layout.addWidget(button_chap, 1, 0)
         
-        L = ["Chapter " + str(i) for i in range(self.number_chapters())]
+        L = ["Chapter " + str(i) for i in range(1, self.number_chapters()+1)]
         self.chapters_dropout = QComboBox(parent = self)
         self.chapters_dropout.setGeometry(100 , 10 , 150 , 30)
         self.chapters_dropout.addItems(L)
@@ -298,6 +298,7 @@ class NovelWindow(QWidget):
     def go_to_chapter(self):
         chapter = self.chapters_dropout.currentText().split(" ")
         if len(chapter) ==2:
+            print(chapter[1])
             self.chapter_win = ChapterWindow(self, self.database, self.novel, chapter[1])
             self.chapter_win.show()
             self.hide()
@@ -336,7 +337,7 @@ class NovelWindow(QWidget):
     
     def reload_chapters(self):
         self.chapters_dropout.clear()
-        self.chapters_dropout.addItems(["Chapter " + str(i) for i in range(self.number_chapters())])
+        self.chapters_dropout.addItems(["Chapter " + str(i) for i in range(1, self.number_chapters()+1)])
     
         
     def new_word(self):

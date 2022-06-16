@@ -115,3 +115,4 @@ class Database(object):
     def scrub(self, word):
         return ''.join( chr for chr in word if chr.isalnum() )  
     
+    
