@@ -389,7 +389,7 @@ class NovelWindow(QWidget):
         self.chapter_win = ChapterWindow(self, self.database, self.novel_id, chapter)
         self.chapter_win.show()
         self.hide()
-        self.reload_chapters()
+
 
     
     def search_word(self):
@@ -559,6 +559,7 @@ class ChapterWindow(QWidget):
     
     def menu(self):
         self.parent.show()
+        self.parent.reload_chapters()
         self.close()
         
         
