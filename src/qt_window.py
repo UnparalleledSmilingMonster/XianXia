@@ -168,9 +168,9 @@ class LoadWindow(QWidget):
         
         self.setLayout(self.layout)
         
-    def forward(self): 
-        novel  = self.database.novel_list()[self.novel_dropout.currentIndex()][0]
-        if novel != -1:
+    def forward(self):
+        if self.novel_dropout.currentIndex()  != -1:
+            novel  = self.database.novel_list()[self.novel_dropout.currentIndex()][0]
             self.parent.buffer_int = novel
             self.close()
         
