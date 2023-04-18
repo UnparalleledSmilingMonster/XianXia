@@ -1,6 +1,6 @@
 # The XianXia Project : Learn Chinese while reading novels !
 
-To all avid readers of Chinese novels, have you ever dreamt to read in Chinese ? Well, if you are here, it means are ready to take the plunge. 
+To all avid readers of Chinese novels, have you ever dreamt to read in Chinese ? Well, if you are here, it means you are ready to take the plunge. 
 This modest app is designed to help you keep track of the new vocabulary you encounter. You can either assign words to the whole novel or to chapters to build small lists. 
 Words are divided into 4 types : vocabulary, protagonist, place and artifact (the latter is especially for xianxia).
 
